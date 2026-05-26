@@ -1,5 +1,7 @@
 # sentry-on-call
 
+[![Made with AgentPhone](https://img.shields.io/badge/made%20with-AgentPhone-000000?style=flat-square&labelColor=000000)](https://agentphone.ai) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](LICENSE)
+
 > Your phone rings when prod goes down. Sentry alerts to real phone calls and texts, via [AgentPhone](https://agentphone.ai).
 
 A ~120-line Python service that turns Sentry alerts into actual phone calls and SMS. New `error` or `fatal` in your Sentry project? Your phone rings and an AI voice reads the alert out loud. A `warning` or `info`? You get a text. Multiple recipients are rung in parallel.
@@ -29,9 +31,11 @@ You need:
 
 ### Option A: Render (one-click)
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/manav2modi/sentry-on-call)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/AgentPhone-AI/sentry-on-call)
 
 Set the four env vars from the table below when prompted.
+
+> Heads up: Render's free tier spins services down after 15 minutes of inactivity, which means the first Sentry webhook after a quiet period may cold-start slowly. Sentry retries failed webhooks, so you won't miss alerts, but they may arrive a minute late. Upgrade to a paid plan ($7/mo) if you need always-on.
 
 ### Option B: Docker (anywhere)
 
@@ -84,17 +88,26 @@ That's it. Every new issue in any project in that org will now page you. No aler
 
 ## Test it
 
-Once `https://<your-deploy-url>/health` returns `{"ok":true,"configured":true}`, send a test event into your Sentry project:
+Once `https://<your-deploy-url>/health` returns `{"ok":true,"configured":true}`, send a test event into your Sentry project.
+
+Your Sentry DSN (from Project Settings -> Client Keys) looks like:
+
+```
+https://<public_key>@<host>/<project_id>
+```
+
+For example: `https://abc123@o456.ingest.us.sentry.io/789` -> public key `abc123`, host `o456.ingest.us.sentry.io`, project id `789`.
+
+Send a test error:
 
 ```bash
-# Replace DSN with the one from your Sentry project's Client Keys page
-curl -X POST 'https://<your-sentry-host>/api/<project_id>/store/' \
-  -H 'X-Sentry-Auth: Sentry sentry_version=7, sentry_key=<your-public-key>' \
+curl -X POST 'https://<host>/api/<project_id>/store/' \
+  -H 'X-Sentry-Auth: Sentry sentry_version=7, sentry_key=<public_key>' \
   -H 'Content-Type: application/json' \
   -d '{"level":"error","message":"sentry-on-call test","environment":"production","platform":"python"}'
 ```
 
-Within ~10 seconds your phone should ring.
+Within ~10 seconds your phone should ring. Swap `"level":"error"` for `"warning"` to test the SMS path.
 
 ## How it works
 
@@ -122,3 +135,5 @@ MIT. See [LICENSE](LICENSE).
 ---
 
 Built with [AgentPhone](https://agentphone.ai) (the phone number your AI agent uses), [Sentry](https://sentry.io), and FastAPI.
+
+[![Made with AgentPhone](https://img.shields.io/badge/made%20with-AgentPhone-000000?style=flat-square&labelColor=000000)](https://agentphone.ai)
